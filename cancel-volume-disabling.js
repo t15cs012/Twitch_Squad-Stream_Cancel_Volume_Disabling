@@ -21,11 +21,9 @@
     function toggleDisabled() {
         targetNodes.forEach(element => {
             element.disabled = false;
-            console.log("toggle disabled");
             element.classList.forEach(className => {
                 if (~className.indexOf('disabled')) {
                     element.classList.remove(className);
-                    console.log('remove', className);
                 }
             });
         });
@@ -35,10 +33,10 @@
         var timer = setInterval(function () {
             targetNodes = document.querySelectorAll('[disabled]');
             if (targetNodes.length) {
-                // Check if there is already a bonus to collect
+                // Check if there is already a disabling volume
                 toggleDisabled();
 
-                // Observe for future bonuses
+                // Observe for future disabling volume
                 observer.observe(targetNodes, config);
                 clearInterval(timer);
             }
@@ -46,78 +44,10 @@
         intervalIds.push(timer);
     }
 
-    function hookIntoReact() {
-        // Watch for navigation changes within the React app
-        function reactNavigationHook(history) {
-            cleanupHistoryListener = history.listen(function (location) {
-                if (~location.pathname.indexOf('squad')) {
-                    cleanup();
-                    start();
-                }
-            });
-        }
-
-        // Find a property within the React component tree
-        function findReactProp(node, prop, func) {
-            if (node.stateNode &&
-                node.stateNode.props &&
-                node.stateNode.props[prop]) {
-                func(node.stateNode.props[prop]);
-            }
-            else if (node.child) {
-                var child = node.child;
-                while (child) {
-                    findReactProp(child, prop, func);
-                    child = child.sibling;
-                }
-            }
-        }
-
-        // Find the react instance of a element
-        function findReactInstance(element, target, func) {
-            var timer = setInterval(function () {
-                var reactRoot = document.getElementById(element);
-                if (reactRoot !== null) {
-                    var reactInstance = null;
-                    for (var _i = 0, _a = Object.keys(reactRoot); _i < _a.length; _i++) {
-                        var key = _a[_i];
-                        if (key.startsWith(target)) {
-                            reactInstance = reactRoot[key];
-                            break;
-                        }
-                    }
-                    if (reactInstance) {
-                        func(reactInstance);
-                        clearInterval(timer);
-                    }
-                }
-            }, 500);
-            intervalIds.push(timer);
-        }
-
-        // Find the root instance and hook into the router history
-        findReactInstance('root', '_reactRootContainer', function (instance) {
-            if (instance._internalRoot && instance._internalRoot.current) {
-                // Hook into router
-                findReactProp(instance._internalRoot.current, 'history', reactNavigationHook);
-                // Determine if the channel has points enabled (May take some time to load)
-                var timer_1 = setInterval(function () {
-                    findReactProp(instance._internalRoot.current, 'isChannelPointsEnabled', function (value) {
-                        if (value) {
-                            findDisabledContainer();
-                        }
-                        clearInterval(timer_1);
-                    });
-                }, 1000);
-                intervalIds.push(timer_1);
-            }
-        });
-    }
-
     function start() {
         window.removeEventListener('beforeunload', cleanup);
         window.addEventListener('beforeunload', cleanup);
-        hookIntoReact();
+        findDisabledContainer();
     }
 
     function cleanup() {
