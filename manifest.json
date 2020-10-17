@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Twitch_Squad-Stream_Cancel_Volume_Disabling",
     "description": "Cancel the disabling of volume control.",
-    "version": "0.1",
+    "version": "0.2",
     "content_scripts": [
         {
             "matches": [
@@ -16,5 +16,11 @@
     ],
     "web_accessible_resources": [
         "cancel-volume-disabling.js"
-    ]
+    ],
+    "icons": {
+        "16": "resources/icon16.png",
+        "48": "resources/icon48.png",
+        "96": "resources/icon96.png",
+        "128": "resources/icon128.png"
+    }
 }
